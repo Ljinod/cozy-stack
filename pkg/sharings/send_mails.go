@@ -11,6 +11,8 @@ import (
 	"github.com/labstack/echo"
 )
 
+// The skeleton of the email we will send. The values between "{{ }}" will be
+// filled through the `mailTemplateValues` structure.
 const (
 	mailTemplateEn = `
         <hr />
@@ -35,6 +37,8 @@ const (
     `
 )
 
+// The sharing-dependent information: the recipient's name, the sharer's public
+// name, the description of the sharing, and the OAuth query string.
 type mailTemplateValues struct {
 	RecipientName    string
 	SharerPublicName string
