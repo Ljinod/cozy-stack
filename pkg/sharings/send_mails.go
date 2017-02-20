@@ -2,6 +2,7 @@ package sharings
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/cozy/cozy-stack/pkg/consts"
 	"github.com/cozy/cozy-stack/pkg/couchdb"
@@ -62,24 +63,14 @@ func SendSharingMails(instance *instance.Instance, s *Sharing) error {
 	if err != nil {
 		return err
 	}
-	// XXX Do we check the length of the public name to avoid empty fields?
 	sharerPublicName, _ := doc.M["public_name"].(string)
 	mailValues.SharerPublicName = sharerPublicName
-
-	// In the sharing document the permissions are stored as a
-	// `permissions.Set`. We need to convert them in a proper format to be able
-	// to incorporate them in the OAuth query string.
-	permissionsScope, err := s.Permissions.MarshalScopeString()
-	if err != nil {
-		return err
-	}
 
 	for _, sharingRecipient := range s.SRecipients {
 		recipient := sharingRecipient.recipient
 
 		// Generate recipient specific OAuth query string.
-		recipientOAuthQueryString, err := generateOAuthQueryString(
-			recipient, s.SharingID, permissionsScope)
+		recipientOAuthQueryString, err := generateOAuthQueryString(recipient, s)
 		if err != nil {
 			return err
 		}
@@ -141,14 +132,33 @@ func generateMailMessage(s *Sharing, r *Recipient,
 
 // generateOAuthQueryString takes care of creating a correct OAuth request for
 // the given sharing and recipient.
-func generateOAuthQueryString(r *Recipient, sharingID string, permissionsScope string) (string, error) {
-	queryString := fmt.Sprintf("%s/sharings/request"+ // Url of the recipient.
-		"?client_id=%s"+ // client_id of sharer at the recipient.
-		"&redirect_uri=%s"+ // redirect_uri specified by sharer.
-		"&state=%s"+ // XXX sharing_id or random string?
-		"&response_type=code"+
-		"&scope=%s", // List of permissions.
-		r.URL, r.Client.ClientID, r.Client.RedirectURIs[0], sharingID, permissionsScope)
+func generateOAuthQueryString(r *Recipient, s *Sharing) (string, error) {
+	// In the sharing document the permissions are stored as a
+	// `permissions.Set`. We need to convert them in a proper format to be able
+	// to incorporate them in the OAuth query string.
+	//
+	// XXX Optimization: this part could be done outside of this function and
+	// also outside of the for loop on the recipients.
+	// I found it was clearer to leave it here, at the price of being less
+	// optimized.
+	permissionsScope, err := s.Permissions.MarshalScopeString()
+	if err != nil {
+		return "", err
+	}
+
+	// We use url.encode to safely escape the query string.
+	mapParamQueryString := url.Values{}
+	mapParamQueryString["client_id"] = []string{r.Client.ClientID}
+	mapParamQueryString["redirect_uri"] = []string{r.Client.RedirectURIs[0]}
+	mapParamQueryString["response_type"] = []string{"code"}
+	mapParamQueryString["scope"] = []string{permissionsScope}
+	mapParamQueryString["sharing_type"] = []string{s.SharingType}
+	mapParamQueryString["state"] = []string{s.SharingID}
+
+	paramQueryString := mapParamQueryString.Encode()
+
+	queryString := fmt.Sprintf("%s/sharings/request?%s", r.URL,
+		paramQueryString)
 
 	return queryString, nil
 }
