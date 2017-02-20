@@ -5,13 +5,12 @@ import (
 
 	"github.com/cozy/cozy-stack/pkg/consts"
 	"github.com/cozy/cozy-stack/pkg/couchdb"
+	"github.com/cozy/cozy-stack/pkg/instance"
 	"github.com/cozy/cozy-stack/pkg/jobs"
 	"github.com/cozy/cozy-stack/pkg/jobs/workers"
-	"github.com/cozy/cozy-stack/web/middlewares"
-	"github.com/labstack/echo"
 )
 
-// The skeleton of the email we will send. The values between "{{ }}" will be
+// The skeleton of the mail we will send. The values between "{{ }}" will be
 // filled through the `mailTemplateValues` structure.
 const (
 	mailTemplateEn = `
@@ -46,14 +45,9 @@ type mailTemplateValues struct {
 	OAuthQueryString string
 }
 
-// SendSharingRequests will generate the mail containing the details
+// SendSharingMails will generate the mail containing the details
 // regarding this sharing, and will then send it to all the recipients.
-func SendSharingRequests(c echo.Context, s *Sharing) error {
-	// Extract the instance from the context: we will need it to get to the
-	// domain and public name of the Cozy owner as well as to start the mail
-	// worker.
-	instance := middlewares.GetInstance(c)
-
+func SendSharingMails(instance *instance.Instance, s *Sharing) error {
 	// Generate the context later used by the mail worker to send the mails.
 	mailWorkerContext := jobs.NewWorkerContext(instance.Domain)
 
@@ -80,7 +74,9 @@ func SendSharingRequests(c echo.Context, s *Sharing) error {
 		return err
 	}
 
-	for _, recipient := range s.Recipients {
+	for _, sharingRecipient := range s.SRecipients {
+		recipient := sharingRecipient.recipient
+
 		// Generate recipient specific OAuth query string.
 		recipientOAuthQueryString, err := generateOAuthQueryString(
 			recipient, s.SharingID, permissionsScope)
@@ -89,7 +85,7 @@ func SendSharingRequests(c echo.Context, s *Sharing) error {
 		}
 
 		// Augment base values with recipient specific information.
-		mailValues.RecipientName = recipient.Mail
+		mailValues.RecipientName = recipient.Email
 		mailValues.OAuthQueryString = recipientOAuthQueryString
 
 		sharingMessage, err := generateMailMessage(s, recipient, mailValues)
@@ -122,8 +118,8 @@ func generateMailMessage(s *Sharing, r *Recipient,
 	mailParts := []*workers.MailPart{&mailPartEn, &mailPartFr}
 
 	// The address of the recipient.
-	mailAddresses := []*workers.MailAddress{&workers.MailAddress{Name: r.Mail,
-		Email: r.Mail}}
+	mailAddresses := []*workers.MailAddress{&workers.MailAddress{Name: r.Email,
+		Email: r.Email}}
 
 	mailOpts := workers.MailOptions{
 		Mode:           "from",
