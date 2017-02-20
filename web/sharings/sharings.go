@@ -62,3 +62,13 @@ func Routes(router *echo.Group) {
 	router.POST("/", CreateSharing)
 	router.POST("/:id/sendMails", SendSharingMails)
 }
+
+func wrapErrors(err error) error {
+	switch err {
+	case sharings.ErrBadSharingType:
+		return jsonapi.InvalidParameter("sharing_type", err)
+	case sharings.ErrRecipientDoesNotExist:
+		return jsonapi.NotFound(err)
+	}
+	return err
+}
