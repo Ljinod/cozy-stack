@@ -66,8 +66,11 @@ func SendSharingMails(instance *instance.Instance, s *Sharing) error {
 	sharerPublicName, _ := doc.M["public_name"].(string)
 	mailValues.SharerPublicName = sharerPublicName
 
-	for _, sharingRecipient := range s.SRecipients {
-		recipient := sharingRecipient.recipient
+	recipients, err := s.Recipients(instance)
+	if err != nil {
+		return err
+	}
+	for _, recipient := range recipients {
 
 		// Generate recipient specific OAuth query string.
 		recipientOAuthQueryString, err := generateOAuthQueryString(recipient, s)
