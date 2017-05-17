@@ -7,7 +7,7 @@ import (
 
 // IndexViewsVersion is the version of current definition of views & indexes.
 // This number should be incremented when this file changes.
-const IndexViewsVersion int = 4
+const IndexViewsVersion int = 11
 
 // GlobalIndexes is the index list required on the global databases to run
 // properly.
@@ -97,48 +97,27 @@ function(doc){
       var p = doc.permissions[k];
       var selector = p.selector || "_id";
       for (var i=0; i<p.values.length; i++) {
-				emit([p.type, selector, p.values[i]], p.verbs);
+        emit([p.type, selector, p.values[i]], p.verbs);
       }
     });
   }
 }`,
 }
 
-// SharedWithMePermissionsView returns the list of permissions associated with
-// sharings and for which the user is a recipient.
-var SharedWithMePermissionsView = &couchdb.View{
-	Name:    "sharedWithMePermissions",
+// SharedWithPermissionsView returns the list of permissions associated with
+// sharings.
+var SharedWithPermissionsView = &couchdb.View{
+	Name:    "sharedWithPermissions",
 	Doctype: Sharings,
 	Map: `
 function(doc) {
-	if (!doc.owner && doc.permissions) {
-		Object.keys(doc.permissions).forEach(function(k) {
-			var rule = doc.permissions[k];
-			var selector = rule.selector || "_id";
-			for (var i=0; i<rule.values.length; i++) {
-				emit([rule.type], rule);
-			}
-		});
-	}
-}`,
-}
-
-// SharedWithOthersPermissionsView returns the list of permissions associated
-// with sharings and for which the user is the sharer.
-var SharedWithOthersPermissionsView = &couchdb.View{
-	Name:    "sharedWithOthersPermissions",
-	Doctype: Sharings,
-	Map: `
-function(doc) {
-	if (doc.owner && doc.permissions) {
-		Object.keys(doc.permissions).forEach(function(k) {
-			var rule = doc.permissions[k];
-			var selector = rule.selector || "_id";
-			for (var i=0; i<rule.values.length; i++) {
-				emit([rule.type], rule);
-			}
-		});
-	}
+	Object.keys(doc.permissions).forEach(function(k) {
+		var rule = doc.permissions[k];
+		var selector = rule.selector || "_id";
+		for (var i=0; i<rule.values.length; i++) {
+			emit([doc.owner, rule.type], rule);
+		}
+	});
 }`,
 }
 
@@ -149,8 +128,7 @@ var Views = []*couchdb.View{
 	FilesByParentView,
 	PermissionsShareByCView,
 	PermissionsShareByDocView,
-	SharedWithMePermissionsView,
-	SharedWithOthersPermissionsView,
+	SharedWithPermissionsView,
 }
 
 // ViewsByDoctype returns the list of views for a specified doc type.

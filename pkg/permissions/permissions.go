@@ -3,6 +3,7 @@ package permissions
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/cozy/cozy-stack/pkg/consts"
@@ -410,46 +411,60 @@ func GetPermissionsByType(db couchdb.Database, doctype string, cursor couchdb.Cu
 }
 
 // GetSharedWithMePermissionsByDoctype retrieves the permissions in all
-// the sharings that apply to the given doctype, where the user is a recipient.
+// the sharings that apply to the given doctype, where the user is a recipient
+// (i.e. owner is false).
 //
 // The cursor will be modified in place.
 func GetSharedWithMePermissionsByDoctype(db couchdb.Database, doctype string, cursor couchdb.Cursor) ([]*Permission, error) {
-	return getSharedWithPermissionsByDoctype(db, doctype, cursor,
-		consts.SharedWithMePermissionsView)
+	return getSharedWithPermissionsByDoctype(db, doctype, cursor, false)
 }
 
 // GetSharedWithOthersPermissionsByDoctype retrieves the permissions in all the
-// sharings that apply to the given doctype, where the user is the sharer.
+// sharings that apply to the given doctype, where the user is the sharer (i.e.
+// owner is true).
 //
 // The cursor will be modified in place.
 func GetSharedWithOthersPermissionsByDoctype(db couchdb.Database, doctype string, cursor couchdb.Cursor) ([]*Permission, error) {
-	return getSharedWithPermissionsByDoctype(db, doctype, cursor,
-		consts.SharedWithOthersPermissionsView)
+	return getSharedWithPermissionsByDoctype(db, doctype, cursor, true)
 }
 
-func getSharedWithPermissionsByDoctype(db couchdb.Database, doctype string, cursor couchdb.Cursor, view *couchdb.View) ([]*Permission, error) {
-
+func getSharedWithPermissionsByDoctype(db couchdb.Database, doctype string, cursor couchdb.Cursor, owner bool) ([]*Permission, error) {
+	fmt.Println("DEBUG: getSharedWith")
 	var req = &couchdb.ViewRequest{
 		StartKey:    []string{doctype},
 		EndKey:      []string{doctype, couchdb.MaxString},
 		IncludeDocs: false,
 	}
 
+	fmt.Printf("DEBUG: cursor: %#v\n", cursor)
 	cursor.ApplyTo(req)
+	fmt.Printf("DEBUG: cursor: %#v\n", cursor)
+	fmt.Printf("DEBUG: req: %#v\n", req)
 
 	var res couchdb.ViewResponse
-	err := couchdb.ExecView(db, view, req, &res)
+	err := couchdb.ExecView(db, consts.SharedWithPermissionsView, req, &res)
 
 	cursor.UpdateFrom(&res)
+	fmt.Printf("DEBUG: cursor: %#v\n", cursor)
+	fmt.Printf("DEBUG: req: %#v\n", req)
+	fmt.Printf("DEBUG: res: %#v\n", res)
 
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Println("DEBUG: After ExecView")
+
 	result := make([]*Permission, len(res.Rows))
 	// The rows have the following format:
-	// "id": "sharingID", "key": [doctype], "value": [rule]
+	// "id": "sharingID", "key": [owner, doctype], "value": [rule]
 	for i, row := range res.Rows {
+		fmt.Printf("DEBUG: %#v\n", row)
+		keys := row.Key.([]interface{})
+		if keys[0].(string) != strconv.FormatBool(owner) {
+			continue
+		}
+
 		var rule Rule
 		rule.Verbs = VerbSet{} // needed for Merge
 
