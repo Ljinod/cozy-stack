@@ -405,4 +405,35 @@ Answer a sharing request.
 
 Delete the specified sharing (both the sharing document and the associated permission).
 
+
+### Frequently Asked Questions
+
+#### How can I know if something is shared with me?
+
+Call the route [GET /permissions/doctype/:doctype/sharedWithMe](permissions.md#get-permissionsdoctypedoctypesharedwithme) to get the list of permissions that are specific to sharings where the user is a recipient.
+
+Check if your something passes one of the permissions returned. If that's the case then the field `source_id` – in the permission — indicates the sharing document from which it was extracted.
+
+#### How can I know if something was shared by me?
+
+Same as above except you need to call the route [GET /permissions/doctype/:doctype/sharedWithOthers](permissions.md#get-permissionsdoctypedoctypesharedwithothers).
+
+#### Could you remind us the different types of sharings?
+
+* _One-shot_: the documents are sent to the recipients and that's it. No updates, no nothing. It's as if you gave them a copy of the data on a usb key.
+* _Master-slave_: updates you make on the documents are propagated to the recipients. The recipients can only consult as everything they do will not be propagated back.
+* _Master-master_: what you and the recipients do is propagated to everybody. Updates, deletions, additions are shared to all parties no matter if they are the sharer or the recipients.
+
+#### Do you have use-cases for the different types of sharings?
+
+Yes!
+* For _one-shot_: a photo album you want to give to someone. We share it for you and then we cut everything, no strings attached.
+* For _master-slave_: a password file that the sysadmins want to share to the rest of the company. Only the sysadmins can modify the password file, the others can only consult them.
+* For _master-master_: a folder containing shared resources for a project. You want all parties to be able to modify the content as well as adding new ones.
+
+#### What are the information required for a recipient?
+
+Two things: an e-mail and the url of the Cozy. We have a discovery feature so the url is not a necessity but it will be convenient if you don't want the recipients to enter their url everytime you share something with them.
+
+
 {% endraw %}
