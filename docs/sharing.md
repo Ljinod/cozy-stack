@@ -446,7 +446,7 @@ Two things: an e-mail and the url of the Cozy. We have a discovery feature so th
 When the user asks to share a resource a sharing document is created. That happens before the emails are sent to the recipients. That also means that if all recipients refuse the sharing document will still be there.  
 The permissions associated are described in that document but **no actual permission documents are created, at any point in the protocol** — permissions are still enforced, it's just that there is no need to create permission documents.
 
-When the recipients accept, a sharing document is created on their Cozy. The sharing document the recipients have is different from that of the sharer.
+When the recipients accept, a sharing document is created on their Cozy. The sharing document the recipients have is slighty different from that of the sharer.
 
 #### What are the differences between the sharing document located at the sharer and the one located at the recipients?
 
