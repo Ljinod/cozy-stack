@@ -406,6 +406,39 @@ Answer a sharing request.
 Delete the specified sharing (both the sharing document and the associated permission).
 
 
+### POST /sharings/app/destinationDirectory
+
+This route lets an application decide where the shared files ("files" as in "io.cozy.files") should go. For example if called by the Photo application it will force all shared photos to go to the directory that was designated.
+
+The association is based on the **application slug**, hence several applications can designate different directories. The differenciation is made when the sharing is created: the application slug is given at the time of the creation and will be transmitted to the recipients. If they have set a destination directory for that particular application slug then the shared files will go inside.
+
+The default value is `/Shared with Me` — "Shared with Me" can be translated to the locale of the user.
+
+#### Request
+
+#### Response
+
+
+### DELETE /sharings/:sharing-id
+
+This route revokes a sharing. The `sharing-id` provided is not the id of the Couchdb document but that of the sharing, which is common to both the sharer and the recipients.
+
+Permissions for that route are checked as following:
+* If the logged-in user is a **recipient**: only the sharer — authentified through her OAuth client — and the application at the origin of the sharing — authentified thanks to its application slug – can make that request.
+* If the logged-in user is the **sharer**: only the application at the origin of the sharing — authentified through its slug — can make that request.
+
+#### Request
+
+#### Response
+
+
+### DELETE /sharings/:sharing-id/recipient/:recipient-id
+
+#### Request
+
+#### Response
+
+
 ### Frequently Asked Questions
 
 #### How can I know if something is shared with me?
