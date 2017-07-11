@@ -403,7 +403,17 @@ Answer a sharing request.
 
 ### DELETE /sharings/:id
 
-Delete the specified sharing (both the sharing document and the associated permission).
+Revoke a sharing. Depending on the role of the logged-in user, recipient or sharer, the implications are different:
+
+| ROLE / SHARING-TYPE | MASTER-SLAVE SHARING | MASTER-MASTER SHARING |
+|---------------------|---------------------------------------------------------|------------------------------------------------------------------|
+| Sharer | Delete all triggers linked to the sharing. | Delete all triggers linked to the sharing. |
+|  | Ask all recipients to revoke the sharing. | Ask all recipients to revoke the sharing. |
+|  |  | Revoke the OAuth clients of all the recipients for that sharing. |
+| Recipient | Revoke the OAuth client of the sharer for that sharing. | Revoke the OAuth client of the sharer for that sharing. |
+|  | Ask the sharer to revoke the logged-in user. | Ask the sharer to revoke the logged-in user. |
+|  |  | Delete all triggers linked to the sharing. |
+
 
 
 ### Frequently Asked Questions
