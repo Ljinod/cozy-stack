@@ -403,16 +403,35 @@ Answer a sharing request.
 
 ### DELETE /sharings/:id
 
-Revoke a sharing. Depending on the role of the logged-in user, recipient or sharer, the implications are different:
+Revoke a sharing. Depending on the role of the logged-in user and the type of sharing, the implications are different:
 
-| ROLE / SHARING-TYPE | MASTER-SLAVE SHARING | MASTER-MASTER SHARING |
+| ROLE / SHARING-TYPE | MASTER-SLAVE SHARING                                    | MASTER-MASTER SHARING                                            |
 |---------------------|---------------------------------------------------------|------------------------------------------------------------------|
-| Sharer | Delete all triggers linked to the sharing. | Delete all triggers linked to the sharing. |
-|  | Ask all recipients to revoke the sharing. | Ask all recipients to revoke the sharing. |
-|  |  | Revoke the OAuth clients of all the recipients for that sharing. |
-| Recipient | Revoke the OAuth client of the sharer for that sharing. | Revoke the OAuth client of the sharer for that sharing. |
-|  | Ask the sharer to revoke the logged-in user. | Ask the sharer to revoke the logged-in user. |
-|  |  | Delete all triggers linked to the sharing. |
+| Sharer              | Delete all triggers linked to the sharing.              | Delete all triggers linked to the sharing.                       |
+|                     | Ask all recipients to revoke the sharing.               | Ask all recipients to revoke the sharing.                        |
+|                     |                                                         | Revoke the OAuth clients of all the recipients for that sharing. |
+| Recipient           | Revoke the OAuth client of the sharer for that sharing. | Revoke the OAuth client of the sharer for that sharing.          |
+|                     | Ask the sharer to revoke the logged-in user.            | Ask the sharer to revoke the logged-in user.                     |
+|                     |                                                         | Delete all triggers linked to the sharing.                       |
+
+Permissions for that route are checked as following:
+* The application at the origin of the sharing can revoke it.
+* The sharer can ask the recipients to revoke the sharing.
+
+#### Request
+
+#### Response
+
+
+### DELETE /sharings/:id/recipient/:recipient-id
+
+Revoke a recipient from a sharing. Only the sharer can make that action and depending on the type of sharing the implications differ:
+* for both _Master-Master_ and _Master-Slave_ sharings the sharer asks the recipient to revoke the sharing;
+* for _Master-Master_ sharing the sharer also deletes the OAuth client of the recipient for that sharing.
+
+#### Request
+
+#### Response
 
 
 
