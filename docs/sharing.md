@@ -434,6 +434,22 @@ Revoke a recipient from a sharing. Only the sharer can make that action and depe
 #### Response
 
 
+### POST /sharings/app/destinationDirectory
+
+Sets the destination directory of the given application.  
+The "destination directory" is where the shared files received by this application will go. Only files shared using "Cozy to Cozy sharings" are concerned.
+
+For example if a user sets the destination directory of the application "Photos" to `/Shared with Me/Photos` then all shared photos will go there.
+
+#### Request
+
+Query parameters required:
+* `Slug`: the slug of the application.
+* `Doctype`: the doctype concerned. For now only `io.cozy.files` should be used.
+* `Dir_id`: the id of the destination directory. The directory should already exist.
+
+#### Response
+
 
 ### Frequently Asked Questions
 
@@ -486,6 +502,5 @@ This table sums up the differences:
 | Owner      | True                                            | False                                       |
 | Recipients | Contains all the recipients related information | (empty)                                     |
 | Sharer     | (empty)                                         | Contains all the sharer related information |
-
 
 {% endraw %}
