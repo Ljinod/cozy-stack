@@ -446,8 +446,8 @@ Revoke a recipient from a sharing. Only the sharer can make that action and depe
 #### Request
 
 ```http
-DELETE /sharings/CfFNWhvEDzHDYOxQvzqPAfHcqQolmjEY/recipient/:recipient-id HTTP/1.1
-Authorization: Bearer zE3OTMsImlzcyI6ImNvenkyLmxvY2FsOjgwODAiLCJzdWIiOiI5ZTZlN …
+DELETE /sharings/xkWMVOrVitZVSqXAAvErcmUAdEKMCLlx/recipient/9e6e595ee50575a3faa064987d00b476
+Authorization: Bearer WQiOiJhY2Nlc3MiLCJpYXQiOjE1MDAzNzM0NDIsIml …
 Host: cozy.example.net
 Content-Type: application/json
 ```
@@ -472,11 +472,21 @@ For example if a user sets the destination directory of the application "Photos"
 Query parameters required:
 
 * `Slug`: the slug of the application.
-* `Doctype`: the doctype concerned. For now only `io.cozy.files` should be used.
+* `Doctype`: the doctype concerned. For now only `io.cozy.files` can be used.
 * `Dir_id`: the id of the destination directory. The directory should already exist.
+
+```http
+POST /sharings/app/destinationDirectory?App_slug=sharotronic&Doctype=io.cozy.sharings&Dir_id=9e6e595ee50575a3faa064987d0e30eb
+Host: cozy.example.net
+Content-Type: application/json
+```
 
 #### Response
 
+```http
+HTTP/1.1 204 No Content
+Content-Type: application/json
+```
 
 ### Frequently Asked Questions
 
