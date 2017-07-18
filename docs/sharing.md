@@ -401,6 +401,7 @@ Receive a sharing request.
 
 Answer a sharing request.
 
+
 ### DELETE /sharings/:id
 
 Revoke a sharing. Depending on the role of the logged-in user and the type of sharing, the implications are different:
@@ -415,23 +416,48 @@ Revoke a sharing. Depending on the role of the logged-in user and the type of sh
 |                     |                                                         | Delete all triggers linked to the sharing.                       |
 
 Permissions for that route are checked as following:
+
 * The application at the origin of the sharing can revoke it.
 * The sharer can ask the recipients to revoke the sharing.
 
 #### Request
 
+```http
+DELETE /sharings/CfFNWhvEDzHDYOxQvzqPAfHcqQolmjEY HTTP/1.1
+Authorization: Bearer zE3OTMsImlzcyI6ImNvenkyLmxvY2FsOjgwODAiLCJzdWIiOiI5ZTZlN …
+Host: cozy.example.net
+Content-Type: application/json
+```
+
 #### Response
 
+```http
+HTTP/1.1 204 No Content
+Content-Type: application/json
+```
 
 ### DELETE /sharings/:id/recipient/:recipient-id
 
 Revoke a recipient from a sharing. Only the sharer can make that action and depending on the type of sharing the implications differ:
+
 * for both _Master-Master_ and _Master-Slave_ sharings the sharer asks the recipient to revoke the sharing;
 * for _Master-Master_ sharing the sharer also deletes the OAuth client of the recipient for that sharing.
 
 #### Request
 
+```http
+DELETE /sharings/CfFNWhvEDzHDYOxQvzqPAfHcqQolmjEY/recipient/:recipient-id HTTP/1.1
+Authorization: Bearer zE3OTMsImlzcyI6ImNvenkyLmxvY2FsOjgwODAiLCJzdWIiOiI5ZTZlN …
+Host: cozy.example.net
+Content-Type: application/json
+```
+
 #### Response
+
+```http
+HTTP/1.1 204 No Content
+Content-Type: application/json
+```
 
 
 ### POST /sharings/app/destinationDirectory
@@ -444,6 +470,7 @@ For example if a user sets the destination directory of the application "Photos"
 #### Request
 
 Query parameters required:
+
 * `Slug`: the slug of the application.
 * `Doctype`: the doctype concerned. For now only `io.cozy.files` should be used.
 * `Dir_id`: the id of the destination directory. The directory should already exist.
